@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Waste Detection | AI-Powered Waste Classification</title>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Animate.css -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #00c9a7;
+            --secondary: #ffd166;
+            --dark: #121212;
+            --darker: #0a0a0a;
+            --light: #f8f9fa;
+            --gray: #6c757d;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        body {
+            background-color: var(--dark);
+            color: var(--light);
+            overflow-x: hidden;
+        }
+        
+        /* Navbar */
+        .navbar {
+            background-color: rgba(10, 10, 10, 0.9);
+            padding: 1rem 2rem;
+            position: fixed;
+            width: 100%;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+        
+        .navbar-brand {
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .navbar-brand i {
+            margin-right: 10px;
+            font-size: 1.8rem;
+        }
+        
+        .nav-link {
+            color: var(--light);
+            margin: 0 1rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .nav-link:hover {
+            color: var(--primary);
+        }
+        
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background-color: var(--primary);
+            transition: width 0.3s ease;
+        }
+        
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        /* Mobile Nav Toggle */
+        .toggle_btn {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--light);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .navbar-nav {
+            display: flex;
+            flex-direction: row;
+        }
+
+        @media (max-width: 768px) {
+            .navbar-nav {
+                display: none;
+                flex-direction: column;
+            }
+            
+            .toggle_btn {
+                display: block;
+            }
+            
+            .navbar.open .navbar-nav {
+                display: flex;
+            }
+        }
+        
+        /* Hero Section */
+        .hero {
+            height: 100vh;
+            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), 
+                        url('https://images.unsplash.com/photo-1584473457406-6240486418e9?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1974&q=80');
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: center;
+            padding: 0 5%;
+        }
+        
+        .hero-content {
+            max-width: 800px;
+        }
+        
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+        
+        .hero p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+        
+        .cta-button {
+            background-color: var(--primary);
+            color: var(--dark);
+            padding: 0.8rem 2rem;
+            border: none;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 201, 167, 0.3);
+        }
+        
+        /* Section Title */
+        .section-title {
+            text-align: center;
+            margin-bottom: 3rem;
+            position: relative;
+        }
+        
+        .section-title h2 {
+            font-size: 2.5rem;
+            color: var(--primary);
+            display: inline-block;
+        }
+        
+        .section-title h2::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 3px;
+            background-color: var(--secondary);
+        }
+        
+        /* Prediction Section */
+        .prediction-section {
+            padding: 5rem 5%;
+            background-color: var(--darker);
+        }
+        
+        .tab-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+        
+        .tab-btn {
+            background: none;
+            border: none;
+            color: var(--light);
+            padding: 0.8rem 2rem;
+            font-size: 1.1rem;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        .tab-btn.active {
+            color: var(--primary);
+        }
+        
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background-color: var(--primary);
+        }
+        
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .prediction-container {
+					display: flex;
+					gap: 20px;
+						justify-content: center;
+						align-items: center;
+						margin-top: 2rem;
+        }
+        
+        @media (max-width: 992px) {
+            .prediction-container {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .image-container {
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease;
+						width: 100%;
+						max-width: 600px;
+        }
+        
+        .image-container:hover {
+            transform: translateY(-5px);
+        }
+        
+        .image-box {
+            height: 400px;
+            border: 2px dashed var(--gray);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+            padding: 1rem;
+        }
+
+        .upload-text {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+        }
+
+        .upload-text i {
+            font-size: 2.5rem;
+            color: var(--gray);
+            margin-bottom: 1rem;
+        }
+
+        /* Controls alignment */
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .control-btn {
+            background-color: var(--primary);
+            color: var(--dark);
+            border: none;
+            padding: 0.6rem 1.5rem;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .control-btn:hover {
+            background-color: var(--secondary);
+        }
+        
+        .control-btn.secondary {
+            background-color: transparent;
+            color: var(--light);
+            border: 2px solid var(--gray);
+        }
+        
+        .control-btn.secondary:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .control-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        /* Video Container */
+        .video-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .video-container.with-placeholder {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .video-container.active {
+            background-color: transparent;
+        }
+
+        .video-placeholder {
+            text-align: center;
+        }
+
+        .video-placeholder i {
+            font-size: 3rem;
+            color: var(--gray);
+            margin-bottom: 1rem;
+        }
+        
+        /* Detection Results */
+        .detection-results {
+            margin-top: 1rem;
+            padding: 1rem;
+            background-color: rgba(0, 201, 167, 0.1);
+            border-radius: 8px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .detection-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .detection-item:last-child {
+            border-bottom: none;
+        }
+
+        .detection-count {
+            font-weight: bold;
+            color: var(--primary);
+        }
+        
+        /* How to Use Section */
+        .how-to-section {
+            padding: 5rem 5%;
+            background-color: var(--dark);
+        }
+        
+        .steps-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .step-card {
+            background-color: var(--darker);
+            border-radius: 10px;
+            padding: 2rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .step-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .step-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+            background-color: var(--primary);
+        }
+        
+        .step-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.1);
+            position: absolute;
+            top: 10px;
+            right: 20px;
+        }
+        
+        .step-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+        
+        .step-card p {
+            color: var(--gray);
+            line-height: 1.6;
+        }
+        
+        /* Footer */
+        footer {
+            background-color: var(--darker);
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .footer-content p {
+            color: var(--gray);
+            margin-bottom: 1rem;
+        }
+        
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .social-links a {
+            color: var(--light);
+            font-size: 1.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .social-links a:hover {
+            color: var(--primary);
+            transform: translateY(-3px);
+        }
+        
+        .copyright {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+        
+        .heart {
+            color: #e74c3c;
+            animation: heartbeat 1.5s infinite;
+        }
+        
+        @keyframes heartbeat {
+            0% { transform: scale(1); }
+            25% { transform: scale(1.1); }
+            50% { transform: scale(1); }
+            75% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        /* Loading Spinner */
+        .loading-spinner {
+            display: none;
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--primary);
+            animation: spin 1s ease-in-out infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: var(--primary);
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        /* Live Detection Feed */
+        #live-feed {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-recycle"></i>
+                Waste Detection
+            </a>
+            <button class="toggle_btn">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="navbar-nav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#home">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#predict">Predict</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#how-to">How to Use</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+        <div class="hero-content animate__animated animate__fadeIn">
+            <h1>Smart Waste Detection</h1>
+            <p>Our AI-powered solution helps identify and classify waste materials with high accuracy. 
+               Upload images or use live camera to detect different types of waste and contribute to 
+               a cleaner environment.</p>
+            <a href="#predict" class="cta-button animate__animated animate__pulse animate__infinite">Try It Now</a>
+        </div>
+    </section>
+
+    <!-- Prediction Section -->
+    <section class="prediction-section" id="predict">
+        <div class="section-title">
+            <h2>Waste Detection</h2>
+        </div>
+        
+        <div class="tab-container">
+            <div class="tabs">
+                <button class="tab-btn active" data-tab="upload-tab">Image Upload</button>
+                <button class="tab-btn" data-tab="live-tab">Live Detection</button>
+            </div>
+            
+            <!-- Image Upload Tab -->
+            <div class="tab-content active" id="upload-tab">
+                <div class="prediction-container">
+                    <div class="image-container">
+                        <div class="image-box" id="upload-box">
+                            <div class="upload-text">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <p>Upload an image to detect waste</p>
+                            </div>
+                            <img id="uploaded-image" style="display: none; max-width: 100%; max-height: 100%;">
+                        </div>
+                        <div class="controls">
+                            <button class="control-btn" id="upload-btn">
+                                <i class="fas fa-upload"></i> Upload
+                            </button>
+                            <input type="file" id="file-input" accept="image/*" style="display: none;">
+                        </div>
+                    </div>
+                    
+                    <div class="image-container">
+                        <div class="image-box" id="result-box">
+                            <div class="upload-text">
+                                <i class="fas fa-image"></i>
+                                <p>Detection results will appear here</p>
+                            </div>
+                            <div class="loading-spinner" id="result-spinner"></div>
+                            <p class="loading-text" id="loading-text" style="display: none;">Processing your image...</p>
+                            <img id="result-image" style="display: none; max-width: 100%; max-height: 100%;">
+                            <div class="detection-results" id="detection-results" style="display: none;"></div>
+                        </div>
+                        <div class="controls">
+                            <button class="control-btn" id="detect-btn" disabled>
+                                <i class="fas fa-search"></i> Detect
+                            </button>
+                            <button class="control-btn secondary" id="reset-btn">
+                                <i class="fas fa-redo"></i> Reset
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Live Detection Tab -->
+<div class="tab-content" id="live-tab">
+    <div class="prediction-container" style="justify-content: center;">
+        <div class="image-container" style="max-width: 800px; width: 100%;">
+            <div class="image-box">
+                <div class="upload-text" id="live-placeholder">
+                    <i class="fas fa-video"></i>
+                    <p>Click "Start Detection" to begin live waste classification</p>
+                </div>
+                <div class="loading-spinner" id="live-spinner" style="display: none;"></div>
+                <p class="loading-text" id="live-status"></p>
+            </div>
+            <div class="controls">
+                <button class="control-btn" id="start-camera-btn">
+                    <i class="fas fa-play"></i> Start Detection
+                </button>
+                <button class="control-btn secondary" id="stop-camera-btn" style="display: none;" disabled>
+                    <i class="fas fa-stop"></i> Stop Detection
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+        </div>
+    </section>
+
+    <!-- How to Use Section -->
+    <section class="how-to-section" id="how-to">
+        <div class="section-title">
+            <h2>How It Works</h2>
+        </div>
+        
+        <div class="steps-container">
+            <div class="step-card animate__animated animate__fadeInUp">
+                <span class="step-number">1</span>
+                <h3>Upload Image</h3>
+                <p>Simply upload an image containing waste materials from your device. Our system supports JPG, PNG, and other common image formats.</p>
+            </div>
+            
+            <div class="step-card animate__animated animate__fadeInUp animate__delay-1s">
+                <span class="step-number">2</span>
+                <h3>Live Detection</h3>
+                <p>Use your device's camera for real-time waste detection. Our AI will analyze the video feed and identify waste materials instantly.</p>
+            </div>
+            
+            <div class="step-card animate__animated animate__fadeInUp animate__delay-2s">
+                <span class="step-number">3</span>
+                <h3>Get Results</h3>
+                <p>View the detection results with bounding boxes and classifications. The system identifies various types of waste with high accuracy.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <p class="copyright">Created by <span class="heart">❤️</span> Naresh B A</p>
+        </div>
+    </footer>
+
+    <!-- Hidden elements for core functionality -->
+    <input type="hidden" id="url" value="/predict">
+    <canvas id="canvas" style="display: none;"></canvas>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+<!-- Scripts -->
+<!-- jQuery already included -->
+<script>
+    // ===================================================
+    // ALL EXISTING JS
+    // ===================================================
+    var base_data = ""; 
+    var detectionInterval;
+    var stream = null;
+
+    function parseDetectionResults(text) {
+        const detectionLine = text.match(/\d+\s\w+(,\s\d+\s\w+)*/);
+        if (!detectionLine) return [];
+        const detections = detectionLine[0].split(', ');
+        return detections.map(d => {
+            const [count, ...labelParts] = d.split(' ');
+            return {count: parseInt(count), label: labelParts.join(' ')};
+        });
+    }
+
+    function displayDetectionResults(results, containerId) {
+        const container = document.getElementById(containerId);
+        container.innerHTML = '';
+        if (results.length === 0) {
+            container.innerHTML = '<p>No waste items detected</p>';
+            return;
+        }
+        results.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'detection-item';
+            div.innerHTML = `<span>${item.label}</span><span class="detection-count">${item.count}</span>`;
+            container.appendChild(div);
+        });
+        container.style.display = 'block';
+    }
+
+    function sendRequest(base64Data) {
+        if (base64Data) {
+            var url = $("#url").val();
+            $('#result-spinner').show();
+            $('#loading-text').show();
+            $('#result-image').hide();
+            $('#detection-results').hide();
+            $('#result-box .upload-text').hide();
+
+            $.ajax({
+                url: url,
+                type: "POST",
+                cache: false,
+                async: true,
+                crossDomain: true,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*'
+                },
+                data: JSON.stringify({ image: base64Data }),
+                success: function(res) {
+                    $('#result-spinner').hide();
+                    $('#loading-text').hide();
+                    if (res.image) {
+                        $('#result-image').attr('src', 'data:image/jpeg;base64,' + res.image);
+                        $('#result-image').show();
+                        if (res.detection_text) {
+                            const results = parseDetectionResults(res.detection_text);
+                            displayDetectionResults(results, 'detection-results');
+                        }
+                    }
+                },
+                error: function(xhr, status, error) {
+                    $('#result-spinner').hide();
+                    $('#loading-text').hide();
+                    $('#result-box .upload-text').show();
+                    alert("Error processing image: " + error);
+                }
+            });
+        }
+    }
+
+    // ===================================================
+    // DOM ELEMENTS
+    // ===================================================
+    const toggleBtn = document.querySelector('.toggle_btn');
+    const navbar = document.querySelector('.navbar');
+    const startCameraBtn = document.getElementById('start-camera-btn');
+    const stopCameraBtn = document.getElementById('stop-camera-btn');
+    const uploadBtn = document.getElementById('upload-btn');
+    const fileInput = document.getElementById('file-input');
+    const detectBtn = document.getElementById('detect-btn');
+    const resetBtn = document.getElementById('reset-btn');
+    const uploadedImage = document.getElementById('uploaded-image');
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    // ===================================================
+    // NAVBAR TOGGLE
+    // ===================================================
+    toggleBtn.addEventListener('click', function() {
+        navbar.classList.toggle('open');
+    });
+
+    // ===================================================
+    // TAB SWITCHING
+    // ===================================================
+    tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const tabId = button.getAttribute('data-tab');
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+            tabContents.forEach(content => content.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            
+            if (tabId === 'live-tab') {
+                resetUploadTab();
+            } else {
+                stopLiveDetection();
+            }
+        });
+    });
+
+    function resetUploadTab() {
+        uploadedImage.style.display = 'none';
+        document.getElementById('result-image').style.display = 'none';
+        document.getElementById('detection-results').style.display = 'none';
+        document.querySelector('#upload-box .upload-text').style.display = 'flex';
+        document.querySelector('#result-box .upload-text').style.display = 'flex';
+        fileInput.value = '';
+        base_data = ""; 
+        document.getElementById('result-spinner').style.display = 'none';
+        document.getElementById('loading-text').style.display = 'none';
+        detectBtn.disabled = true;
+    }
+
+    // ===================================================
+    // IMAGE UPLOAD
+    // ===================================================
+    uploadBtn.addEventListener('click', function() {
+        fileInput.click();
+    });
+    fileInput.addEventListener('change', function(e) {
+        if (this.files && this.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(ev) {
+                uploadedImage.src = ev.target.result;
+                uploadedImage.style.display = 'block';
+                document.querySelector('#upload-box .upload-text').style.display = 'none';
+                detectBtn.disabled = false;
+
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    canvas.height = this.height;
+                    canvas.width = this.width;
+                    ctx.drawImage(this, 0, 0);
+                    base_data = canvas.toDataURL('image/jpeg', 1.0).replace(/^data:image.+;base64,/, '');
+                };
+                img.src = ev.target.result;
+            };
+            reader.readAsDataURL(this.files[0]);
+        }
+    });
+    detectBtn.addEventListener('click', function() {
+        if (uploadedImage.style.display === 'block') {
+            sendRequest(base_data);
+        } else {
+            alert('Please upload an image first');
+        }
+    });
+    resetBtn.addEventListener('click', resetUploadTab);
+
+    // ===================================================
+    // SMOOTH SCROLL
+    // ===================================================
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                window.scrollTo({ top: target.offsetTop - 70, behavior: 'smooth' });
+            }
+        });
+    });
+    window.addEventListener('scroll', function() {
+        document.querySelectorAll('.step-card').forEach(card => {
+            const cardPosition = card.getBoundingClientRect().top;
+            const scrollPosition = window.scrollY + window.innerHeight;
+            if (scrollPosition > cardPosition) {
+                card.classList.add('animate__fadeInUp');
+            }
+        });
+    });
+    window.addEventListener('beforeunload', function() {
+        stopLiveDetection();
+    });
+
+    // ===================================================
+    // LIVE DETECTION START/STOP BUTTONS
+    // ===================================================
+    startCameraBtn.addEventListener('click', async function() {
+        try {
+            this.disabled = true;
+            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Starting...';
+            document.getElementById('live-spinner').style.display = 'block';
+            document.getElementById('live-status').textContent = 'Starting YOLOv5 detection...';
+            
+            const response = await fetch("/live", { method: "POST" });
+            const data = await response.json();
+
+            if (data.status) {
+                document.getElementById('live-spinner').style.display = 'none';
+                document.getElementById('live-status').textContent = 'YOLOv5 detection active';
+                document.getElementById('live-placeholder').style.display = 'none';
+                this.style.display = 'none';
+                stopCameraBtn.disabled = false;
+                stopCameraBtn.style.display = 'inline-block';
+            } else {
+                throw new Error(data.error || 'Failed to start detection');
+            }
+        } catch (error) {
+            console.error(error);
+            document.getElementById('live-spinner').style.display = 'none';
+            document.getElementById('live-status').textContent = 'Error: ' + error.message;
+            this.disabled = false;
+            this.innerHTML = '<i class="fas fa-play"></i> Start Detection';
+        }
+    });
+    stopCameraBtn.addEventListener('click', async function() {
+        try {
+            this.disabled = true;
+            document.getElementById('live-status').textContent = 'Stopping detection...';
+            
+            const response = await fetch("/stop", { method: "POST" });
+            const data = await response.json();
+
+            if (data.status) {
+                document.getElementById('live-status').textContent = 'Detection stopped';
+                document.getElementById('live-placeholder').style.display = 'flex';
+                this.style.display = 'none';
+                startCameraBtn.style.display = 'inline-block';
+                startCameraBtn.disabled = false;
+                startCameraBtn.innerHTML = '<i class="fas fa-play"></i> Start Detection';
+            } else {
+                throw new Error(data.error || 'Failed to stop detection');
+            }
+        } catch (error) {
+            console.error(error);
+            document.getElementById('live-status').textContent = 'Error stopping detection: ' + error.message;
+            this.disabled = false;
+        }
+    });
+</script>
+
+</body>
+</html>

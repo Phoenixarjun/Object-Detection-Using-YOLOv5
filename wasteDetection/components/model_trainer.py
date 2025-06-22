@@ -3,12 +3,12 @@ import sys
 import yaml
 import zipfile
 import shutil
+import subprocess
 from wasteDetection.utils.main_utils import read_yaml_file
 from wasteDetection.logger import logging
 from wasteDetection.exception import AppException
 from wasteDetection.entity.config_entity import ModelTrainerConfig
 from wasteDetection.entity.artifacts_entity import ModelTrainerArtifact
-
 
 class ModelTrainer:
     def __init__(self, model_trainer_config: ModelTrainerConfig):
@@ -16,13 +16,12 @@ class ModelTrainer:
 
     def initiate_model_trainer(self) -> ModelTrainerArtifact:
         logging.info("Entered initiate_model_trainer method of ModelTrainer class")
-
         try:
             zip_file = "data.zip"
             if os.path.exists(zip_file):
                 with zipfile.ZipFile(zip_file, 'r') as zf:
-                    zf.extractall(".") 
-                os.remove(zip_file)  
+                    zf.extractall(".")
+                os.remove(zip_file)
             else:
                 raise FileNotFoundError(f"{zip_file} not found!")
 
@@ -33,10 +32,8 @@ class ModelTrainer:
                 num_classes = str(yaml.safe_load(stream)['nc'])
 
             model_config_file_name = self.model_trainer_config.weight_name.split(".")[0]
-
             config = read_yaml_file(f"yolov5/models/{model_config_file_name}.yaml")
             config["nc"] = int(num_classes)
-
             with open(f"yolov5/models/custom_{model_config_file_name}.yaml", "w") as f:
                 yaml.dump(config, f)
 
@@ -50,8 +47,14 @@ class ModelTrainer:
             trained_model_dir = "yolov5/runs/train/yolov5s_results/weights/best.pt"
             final_dir = self.model_trainer_config.model_trainer_dir
             os.makedirs(final_dir, exist_ok=True)
+            best_model_path = os.path.join(final_dir, "best.pt")
+            shutil.copy(trained_model_dir, best_model_path)
 
-            shutil.copy(trained_model_dir, final_dir)
+            # Export ONNX
+            subprocess.run([
+                "python", "yolov5/export.py", "--weights", best_model_path, "--img", "640", "--include", "onnx", "--device", "cpu"
+            ])
+            best_onnx_path = best_model_path.replace(".pt", ".onnx")
 
             for item in ["yolov5/runs", "train", "valid", "data.yaml"]:
                 if os.path.exists(item):
@@ -61,12 +64,10 @@ class ModelTrainer:
                         shutil.rmtree(item)
 
             model_trainer_artifact = ModelTrainerArtifact(
-                trained_model_file_path=os.path.join(final_dir, "best.pt")
+                trained_model_file_path=best_model_path
             )
             logging.info(f"Model trainer artifact: {model_trainer_artifact}")
-
             return model_trainer_artifact
 
         except Exception as e:
             raise AppException(e, sys)
-
