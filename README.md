@@ -33,8 +33,6 @@ The project is organized in a clean, modular fashion:
 
 ---
 
----
-
 ## ⚡️ Features
 ✅ Upload an image and get detected waste results.  
 ✅ Real-time detection through webcam (`live detection`).  
@@ -97,6 +95,8 @@ cd Waste-Detection-Using-YOLOv5
 ```bash
 pip install -r requirements.txt
 ```
+
+---
 
 
 ## ⚡️ Usage
