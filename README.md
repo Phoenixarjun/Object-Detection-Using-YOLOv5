@@ -154,5 +154,3 @@ Created by **Naresh B A**
 [LinkedIn](https://www.linkedin.com/in/naresh-b-a-1b5331243)
 
 > ⭐️ If you found this project helpful, give it a star!
-
----
